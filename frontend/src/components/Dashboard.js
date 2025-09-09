@@ -20,7 +20,7 @@ const Dashboard = ({ user, onLogout }) => {
   const loadFiles = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/files/my-files/${user.ownerId}`);
+      const response = await fetch(`http://localhost:8080/api/files/my-files/${user.ownerId}`);
       if (response.ok) {
         const userFiles = await response.json();
         setFiles(userFiles);
@@ -37,7 +37,7 @@ const Dashboard = ({ user, onLogout }) => {
 
   const loadAllFiles = async () => {
     try {
-      const response = await fetch(`/api/files/all-files`);
+      const response = await fetch(`http://localhost:8080/api/files/all-files`);
       if (response.ok) {
         const allFilesData = await response.json();
         setAllFiles(allFilesData);
@@ -72,7 +72,7 @@ const Dashboard = ({ user, onLogout }) => {
     formData.append('ownerId', user.ownerId);
 
     try {
-      const response = await fetch('/api/files/upload', {
+      const response = await fetch('http://localhost:8080/api/files/upload', {
         method: 'POST',
         body: formData,
       });
@@ -97,7 +97,7 @@ const Dashboard = ({ user, onLogout }) => {
 
   const handleFileDownload = async (fileId, filename) => {
     try {
-      const response = await fetch(`/api/files/download/${fileId}`);
+      const response = await fetch(`http://localhost:8080/api/files/download/${fileId}`);
       
       if (response.ok) {
         const blob = await response.blob();

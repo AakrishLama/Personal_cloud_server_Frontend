@@ -24,7 +24,7 @@ const Login = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await fetch('/api/loginUser', {
+      const response = await fetch('http://localhost:8080/api/loginUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
