@@ -12,6 +12,8 @@ const Register = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+
 
   const handleChange = (e) => {
     setFormData({
@@ -41,7 +43,7 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/registerUser', {
+      const response = await fetch(`${API_BASE_URL}/api/registerUser`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

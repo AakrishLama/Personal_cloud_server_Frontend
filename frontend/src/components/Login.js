@@ -9,6 +9,8 @@ const Login = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+
 
   const handleChange = (e) => {
     setFormData({
@@ -23,8 +25,11 @@ const Login = ({ onLogin }) => {
     setLoading(true);
     setError('');
 
+    console.log('API_BASE_URL:', API_BASE_URL);
+    console.log('Full URL:', `${API_BASE_URL}/api/loginUser`);
+
     try {
-      const response = await fetch('http://localhost:8080/api/loginUser', {
+      const response = await fetch(`${API_BASE_URL}/api/loginUser`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +91,6 @@ const Login = ({ onLogin }) => {
           </div>
 
           {error && <div className="error">{error}</div>}
-
           <button 
             type="submit" 
             className="btn" 
