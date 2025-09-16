@@ -46,6 +46,7 @@ const Login = ({ onLogin }) => {
           // We'll use email as the ownerId for file operations
           ownerId: formData.email
         };
+
         onLogin(user);
         navigate('/dashboard');
       } else {
