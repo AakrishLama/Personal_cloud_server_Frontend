@@ -31,8 +31,6 @@ function App() {
         localStorage.removeItem('currentUser');
     };
 
-    // console.log local storage
-    console.log('Local Storage:', localStorage.getItem('currentUser'));
     return (
         <Router>
             <div className="App">
