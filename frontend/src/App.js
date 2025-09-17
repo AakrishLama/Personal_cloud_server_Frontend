@@ -5,6 +5,7 @@ import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import './App.css';
 import Myfiles from './components/Myfiles';
+import Myfriends from './components/Myfriends';
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -70,6 +71,14 @@ function App() {
                         element={
                             isLoggedIn ?
                                 <Myfiles user={currentUser} onLogout={handleLogout} /> :
+                                <Navigate to="/login" replace />
+                        }
+                    />
+                    <Route
+                        path="/Myfriends"
+                        element={
+                            isLoggedIn ?
+                                <Myfriends user={currentUser} onLogout={handleLogout} /> :
                                 <Navigate to="/login" replace />
                         }
                     />

@@ -143,6 +143,7 @@ const Dashboard = ({ user, onLogout }) => {
                 <h1>Personal Cloud Server</h1>
                 <div className="nav-buttons">
                     <button className="btn btn-secondary" onClick={() => navigate('/Myfiles')}>My folders</button>
+                    <button onClick={()=>navigate("/Myfriends")}>My friends </button>
                     <button onClick={handleLogout} className="btn btn-secondary">
                         Logout
                     </button>
