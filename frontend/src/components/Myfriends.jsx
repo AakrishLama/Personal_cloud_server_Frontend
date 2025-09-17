@@ -47,6 +47,7 @@ export default function Myfriends({ user, onLogout }) {
         console.log("Start chat with:", friendUser);
         // You can implement chat functionality here
         alert(`Starting chat with ${friendUser.username}`);
+        navigate("/ChatUi", {state: {friendUser}});
     };
 
     const handleBackToDashboard = () => {

@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import './App.css';
 import Myfiles from './components/Myfiles';
 import Myfriends from './components/Myfriends';
+import ChatUi from './components/ChatUi';
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -79,6 +80,15 @@ function App() {
                         element={
                             isLoggedIn ?
                                 <Myfriends user={currentUser} onLogout={handleLogout} /> :
+                                <Navigate to="/login" replace />
+                        }
+                    />
+                    {/** route to chat page */}
+                    <Route
+                        path="/ChatUi"
+                        element={
+                            isLoggedIn ?
+                                <ChatUi user={currentUser} onLogout={handleLogout} /> :
                                 <Navigate to="/login" replace />
                         }
                     />
