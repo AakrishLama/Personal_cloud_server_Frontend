@@ -15,10 +15,19 @@ export default function ChatUi() {
     const [isConnected, setIsConnected] = useState(false);
     const [chatRoomData, setChatRoomData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [file, setFile]= useState(null);
+    const [messageAndFile, setMessageAndFile] = useState(null);
 
     const API_BASE_URL = 'http://localhost:8080';
     const messagesEndRef = useRef(null);
     const stompClientRef = useRef(null);
+
+    useEffect(()=>{
+        if(file){
+            console.log("file selected:", file);
+        }
+
+    },[file]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -186,6 +195,12 @@ export default function ChatUi() {
         return <div className="chat-container">Please log in to use the chat.</div>;
     }
 
+    const handleFileChange=(e)=>{
+        setFile(e.target.files[0]);
+        console.log("selected file :",e.target.files[0]);
+    }
+    
+
     return (
         <div className="chat-container">
             <div className="chat-main">
@@ -261,6 +276,10 @@ export default function ChatUi() {
                                 disabled={!isConnected}
                                 rows={1}
                             />
+                            {/** file upload area */}
+                            <form>
+                                <input type="file" onChange={handleFileChange}></input>
+                            </form>
                             <button 
                                 className="send-button"
                                 onClick={sendMessage}
