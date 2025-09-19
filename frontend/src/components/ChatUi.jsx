@@ -189,56 +189,88 @@ export default function ChatUi() {
     return (
         <div className="chat-container">
             <div className="chat-main">
+                {/* Chat Header */}
                 <div className="chat-header">
-                    <h2>
-                        {friendUser ? `Chat with ${friendUser.username}` : 'No user selected'}
-                        <span style={{marginLeft: '10px', fontSize: '14px', color: isConnected ? 'green' : 'red'}}>
-                            {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
-                        </span>
-                    </h2>
+                    <div className="chat-header-content">
+                        <div className="user-avatar">
+                            {friendUser?.username?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="user-info">
+                            <h2>{friendUser ? friendUser.username : 'No user selected'}</h2>
+                            <p className="connection-status">
+                                {isConnected ? '🟢 Online' : '🔴 Offline'}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
+                {/* Messages Area */}
                 <div className="chat-messages">
                     {messages.length === 0 ? (
-                        <p className="no-messages">No messages yet. Say hello!</p>
+                        <div className="no-messages">
+                            <div className="no-messages-icon">💬</div>
+                            <p>No messages yet</p>
+                            <p className="subtext">Send a message to start the conversation</p>
+                        </div>
                     ) : (
-                        messages.map((msg, index) => (
-                            <div
-                                key={index}
-                                className={`message ${msg.sender === currentUser.email ? 'sent' : 'received'}`}
-                            >
-                                <div className="message-content">{msg.content}</div>
-                                <div className="message-timestamp">
-                                    {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : 'Now'}
-                                </div>
-                            </div>
-                        ))
+                        <div className="messages-container">
+                            {messages.map((msg, index) => {
+                                const isSender = msg.sender === currentUser.email;
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`message-bubble ${isSender ? 'sent' : 'received'}`}
+                                    >
+                                        <div className="message-content">
+                                            <p>{msg.content}</p>
+                                            <span className="message-time">
+                                                {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { 
+                                                    hour: '2-digit', 
+                                                    minute: '2-digit' 
+                                                }) : 'Now'}
+                                            </span>
+                                        </div>
+                                        {!isSender && (
+                                            <div className="message-sender">
+                                                {msg.sender === friendUser.email ? friendUser.username : msg.sender}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     )}
                     <div ref={messagesEndRef} />
                 </div>
 
+                {/* Input Area */}
                 {friendUser && (
                     <div className="chat-input-area">
-                        <textarea
-                            className="message-input"
-                            placeholder='Enter your message...'
-                            value={messageInput}
-                            onChange={(e) => setMessageInput(e.target.value)}
-                            onKeyPress={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    sendMessage();
-                                }
-                            }}
-                            disabled={!isConnected}
-                        />
-                        <button 
-                            className="send-btn" 
-                            onClick={sendMessage}
-                            disabled={!isConnected || messageInput.trim() === '' || !currentUser}
-                        >
-                            {isConnected ? 'Send' : 'Connecting...'}
-                        </button>
+                        <div className="input-container">
+                            <textarea
+                                className="message-input"
+                                placeholder='Type your message...'
+                                value={messageInput}
+                                onChange={(e) => setMessageInput(e.target.value)}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        sendMessage();
+                                    }
+                                }}
+                                disabled={!isConnected}
+                                rows={1}
+                            />
+                            <button 
+                                className="send-button"
+                                onClick={sendMessage}
+                                disabled={!isConnected || messageInput.trim() === ''}
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
