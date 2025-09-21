@@ -43,7 +43,7 @@ export const MyfilesHelperProvider = ({children})=>{
         try {
             setLoading(true);
             setError('');
-            const response = await fetch(`${API_BASE_URL}/api/files/my-files/${currentUserId.ownerId}`);
+            const response = await fetch(`${API_BASE_URL}/api/files/my-files/${JSON.parse(userData).ownerId}`);
             if (response.ok) {
                 const userFiles = await response.json();
                 setMyFilesFromHelper(userFiles);

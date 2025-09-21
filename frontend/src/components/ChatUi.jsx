@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext} from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useLocation } from 'react-router-dom';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
@@ -20,24 +20,24 @@ export default function ChatUi() {
     const [isConnected, setIsConnected] = useState(false);
     const [chatRoomData, setChatRoomData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [file, setFile]= useState(null);
+    const [fileId, setFile] = useState(null);
     const [messageAndFile, setMessageAndFile] = useState(null);
 
     const API_BASE_URL = 'http://localhost:8080';
     const messagesEndRef = useRef(null);
     const stompClientRef = useRef(null);
 
-    useEffect(()=>{
-        if(myFilesFromHelper){
+    useEffect(() => {
+        if (myFilesFromHelper) {
             console.log("myFilesFromhelper:", myFilesFromHelper);
-            // for (const file of myFilesFromHelper ){
-            //     console.log("file:", file.filename);
+            // for (const fileId of myFilesFromHelper ){
+            //     console.log("fileId:", fileId.filename);
             // }
         }
-        if(file){
-            console.log("file selected:", file);
+        if (fileId) {
+            console.log("fileId selected:", fileId);
         }
-    },[file]);
+    }, [fileId]);
 
 
 
@@ -62,7 +62,7 @@ export default function ChatUi() {
     const getOrCreateChatRoom = async (sender, receiver) => {
         try {
             const response = await fetch(`${API_BASE_URL}/room/${sender}/${receiver}`);
-            
+
             if (response.ok) {
                 const room = await response.json();
                 return room;
@@ -107,7 +107,7 @@ export default function ChatUi() {
                 }
             }
         };
-        
+
         initializeChat();
     }, [currentUser, friendUser]);
 
@@ -124,7 +124,7 @@ export default function ChatUi() {
         }
 
         console.log("Creating WebSocket connection for room:", chatRoomData.id);
-        
+
         const socket = new SockJS(`${API_BASE_URL}/ws`);
         const client = Stomp.over(socket);
 
@@ -147,7 +147,7 @@ export default function ChatUi() {
             });
 
             console.log("Subscribed to topic:", chatTopic);
-            
+
             // Debug subscription to see all messages
             client.subscribe(`/**`, (message) => {
                 console.log("DEBUG - All messages - Destination:", message.headers.destination, "Body:", message.body);
@@ -180,7 +180,7 @@ export default function ChatUi() {
         if (messageInput.trim() === '' || !friendUser || !stompClientRef.current?.connected || !currentUser) {
             return;
         }
-        
+
         const newMessage = {
             content: messageInput,
             sender: currentUser.email,
@@ -189,7 +189,7 @@ export default function ChatUi() {
 
         // Send to backend via STOMP
         stompClientRef.current.send("/app/chat.sendMessage", {}, JSON.stringify(newMessage));
-        
+
         // Clear input immediately
         setMessageInput('');
     };
@@ -207,11 +207,11 @@ export default function ChatUi() {
         return <div className="chat-container">Please log in to use the chat.</div>;
     }
 
-    const handleFileChange=(e)=>{
+    const handleFileChange = (e) => {
         setFile(e.target.files[0]);
-        console.log("selected file :",e.target.files[0]);
+        console.log("selected fileId :", e.target.files[0]);
     }
-    
+
 
     return (
         <div className="chat-container">
@@ -251,9 +251,9 @@ export default function ChatUi() {
                                         <div className="message-content">
                                             <p>{msg.content}</p>
                                             <span className="message-time">
-                                                {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { 
-                                                    hour: '2-digit', 
-                                                    minute: '2-digit' 
+                                                {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
                                                 }) : 'Now'}
                                             </span>
                                         </div>
@@ -288,19 +288,22 @@ export default function ChatUi() {
                                 disabled={!isConnected}
                                 rows={1}
                             />
-                            {/** allow the user to select the file from myFilesFromHelper*/}
-                            <select>
-                                {myFilesFromHelper.map((file, index) => (
-                                    <option key={index}>{file.filename}</option>
+                            {/** allow the user to select the fileId from myFilesFromHelper*/}
+                            <select onChange={(e) => setFile(e.target.value)}>
+                                <option value="">Select a fileId to share</option>
+                                {myFilesFromHelper.map((fileId, index) => (
+                                    <option key={index} value={fileId.id}>
+                                        {fileId.filename}
+                                    </option>
                                 ))}
                             </select>
-                            <button 
+                            <button
                                 className="send-button"
                                 onClick={sendMessage}
                                 disabled={!isConnected || messageInput.trim() === ''}
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                                 </svg>
                             </button>
                         </div>
