@@ -30,12 +30,16 @@ export default function ChatUi() {
     useEffect(()=>{
         if(myFilesFromHelper){
             console.log("myFilesFromhelper:", myFilesFromHelper);
+            // for (const file of myFilesFromHelper ){
+            //     console.log("file:", file.filename);
+            // }
         }
         if(file){
             console.log("file selected:", file);
         }
-
     },[file]);
+
+
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -284,10 +288,12 @@ export default function ChatUi() {
                                 disabled={!isConnected}
                                 rows={1}
                             />
-                            {/** file upload area */}
-                            <form>
-                                <input type="file" onChange={handleFileChange}></input>
-                            </form>
+                            {/** allow the user to select the file from myFilesFromHelper*/}
+                            <select>
+                                {myFilesFromHelper.map((file, index) => (
+                                    <option key={index}>{file.filename}</option>
+                                ))}
+                            </select>
                             <button 
                                 className="send-button"
                                 onClick={sendMessage}
