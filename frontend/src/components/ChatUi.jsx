@@ -3,25 +3,20 @@ import { useLocation } from 'react-router-dom';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
 import "../ChatUi.css";
-
-// import myfileshelper context
 import useMyFilesHelper from '../context/MyFilesHelper';
 
 export default function ChatUi() {
-    //! myfiles from context to share .
     const { myFilesFromHelper, loading, error, currentUserId } = useMyFilesHelper();
     const location = useLocation();
     const { friendUser } = location.state || {};
 
-    // Safely get currentUser from localStorage with null check
     const [currentUser, setCurrentUser] = useState(null);
     const [messageInput, setMessageInput] = useState('');
     const [messages, setMessages] = useState([]);
     const [isConnected, setIsConnected] = useState(false);
     const [chatRoomData, setChatRoomData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [fileId, setFile] = useState(null);
-    const [messageAndFile, setMessageAndFile] = useState(null);
+    const [selectedFileId, setSelectedFileId] = useState('');
 
     const API_BASE_URL = 'http://localhost:8080';
     const messagesEndRef = useRef(null);
@@ -29,23 +24,17 @@ export default function ChatUi() {
 
     useEffect(() => {
         if (myFilesFromHelper) {
-            console.log("myFilesFromhelper:", myFilesFromHelper);
-            // for (const fileId of myFilesFromHelper ){
-            //     console.log("fileId:", fileId.filename);
-            // }
+            console.log("myFilesFromHelper:", myFilesFromHelper);
         }
-        if (fileId) {
-            console.log("fileId selected:", fileId);
+        if (selectedFileId) {
+            console.log("selectedFileId:", selectedFileId);
         }
-    }, [fileId]);
-
-
+    }, [selectedFileId, myFilesFromHelper]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    // Load current user from localStorage on component mount
     useEffect(() => {
         const userData = localStorage.getItem('currentUser');
         if (userData) {
@@ -58,11 +47,9 @@ export default function ChatUi() {
         setIsLoading(false);
     }, []);
 
-    // Get or create chat room
     const getOrCreateChatRoom = async (sender, receiver) => {
         try {
             const response = await fetch(`${API_BASE_URL}/room/${sender}/${receiver}`);
-
             if (response.ok) {
                 const room = await response.json();
                 return room;
@@ -75,7 +62,6 @@ export default function ChatUi() {
         }
     }
 
-    // Load chat history
     const loadChatHistory = async (user1, user2) => {
         try {
             const response = await fetch(`${API_BASE_URL}/history/${user1}/${user2}`);
@@ -90,7 +76,6 @@ export default function ChatUi() {
         }
     }
 
-    // Initialize chat room and load history when users are available
     useEffect(() => {
         const initializeChat = async () => {
             if (currentUser?.email && friendUser?.email) {
@@ -111,14 +96,11 @@ export default function ChatUi() {
         initializeChat();
     }, [currentUser, friendUser]);
 
-    // WebSocket connection and subscription
     useEffect(() => {
-        // Don't connect if missing required data
         if (!currentUser?.email || !friendUser?.email || !chatRoomData?.id) {
             return;
         }
 
-        // Don't reconnect if already connected
         if (stompClientRef.current?.connected) {
             return;
         }
@@ -133,7 +115,6 @@ export default function ChatUi() {
             setIsConnected(true);
             stompClientRef.current = client;
 
-            // Subscribe to the topic using the chat room ID
             const chatTopic = `/topic/${chatRoomData.id}`;
             client.subscribe(chatTopic, (message) => {
                 try {
@@ -147,11 +128,6 @@ export default function ChatUi() {
             });
 
             console.log("Subscribed to topic:", chatTopic);
-
-            // Debug subscription to see all messages
-            client.subscribe(`/**`, (message) => {
-                console.log("DEBUG - All messages - Destination:", message.headers.destination, "Body:", message.body);
-            });
         };
 
         client.onStompError = (frame) => {
@@ -166,7 +142,6 @@ export default function ChatUi() {
 
         client.activate();
 
-        // Cleanup function
         return () => {
             if (client && client.connected) {
                 console.log("Disconnecting WebSocket");
@@ -176,7 +151,7 @@ export default function ChatUi() {
         };
     }, [chatRoomData?.id, currentUser?.email, friendUser?.email]);
 
-    const sendMessage = () => {
+    const sendTextMessage = () => {
         if (messageInput.trim() === '' || !friendUser || !stompClientRef.current?.connected || !currentUser) {
             return;
         }
@@ -185,16 +160,46 @@ export default function ChatUi() {
             content: messageInput,
             sender: currentUser.email,
             receiver: friendUser.email,
+            messageType: "TEXT"
         };
 
-        // Send to backend via STOMP
         stompClientRef.current.send("/app/chat.sendMessage", {}, JSON.stringify(newMessage));
-
-        // Clear input immediately
         setMessageInput('');
     };
 
-    // Auto-scroll when messages change
+    const sendFileMessage = () => {
+        if (!selectedFileId || !friendUser || !stompClientRef.current?.connected || !currentUser) {
+            alert("Please select a file to share");
+            return;
+        }
+
+        // Find the selected file to get its filename for the message content
+        const selectedFile = myFilesFromHelper.find(file => file.id === selectedFileId);
+        
+        const fileMessage = {
+            content: `Shared file: ${selectedFile ? selectedFile.filename : 'File'}`,
+            sender: currentUser.email,
+            receiver: friendUser.email,
+            messageType: "FILE",
+            fileId: selectedFileId,
+            fileName: selectedFile ? selectedFile.filename : '',
+            fileOwnerId: currentUser.email,
+            pathOfFile: selectedFile ? selectedFile.storagePath : ''
+        };
+
+        console.log("Sending file message:", fileMessage);
+        stompClientRef.current.send("/app/chat.sendMessage", {}, JSON.stringify(fileMessage));
+        setSelectedFileId('');
+    };
+
+    const handleSendMessage = () => {
+        if (selectedFileId) {
+            sendFileMessage();
+        } else {
+            sendTextMessage();
+        }
+    };
+
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
@@ -206,12 +211,6 @@ export default function ChatUi() {
     if (!currentUser) {
         return <div className="chat-container">Please log in to use the chat.</div>;
     }
-
-    const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
-        console.log("selected fileId :", e.target.files[0]);
-    }
-
 
     return (
         <div className="chat-container">
@@ -243,13 +242,33 @@ export default function ChatUi() {
                         <div className="messages-container">
                             {messages.map((msg, index) => {
                                 const isSender = msg.sender === currentUser.email;
+                                const isFileMessage = msg.messageType === "FILE";
+                                
                                 return (
                                     <div
                                         key={index}
-                                        className={`message-bubble ${isSender ? 'sent' : 'received'}`}
+                                        className={`message-bubble ${isSender ? 'sent' : 'received'} ${isFileMessage ? 'file-message' : ''}`}
                                     >
                                         <div className="message-content">
-                                            <p>{msg.content}</p>
+                                            {isFileMessage ? (
+                                                <div className="file-message-content">
+                                                    <div className="file-icon">📎</div>
+                                                    <div className="file-info">
+                                                        <p className="file-name">{msg.fileName || 'File'}</p>
+                                                        <p className="file-meta">
+                                                            File shared • {msg.content}
+                                                        </p>
+                                                        <div className="file-metadata-debug">
+                                                            <small>File ID: {msg.fileId}</small>
+                                                            <small>Path: {msg.pathOfFile}</small>
+                                                            <small>Owner: {msg.fileOwnerId}</small>
+                                                            <small>Type: {msg.messageType}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p>{msg.content}</p>
+                                            )}
                                             <span className="message-time">
                                                 {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {
                                                     hour: '2-digit',
@@ -282,30 +301,50 @@ export default function ChatUi() {
                                 onKeyPress={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault();
-                                        sendMessage();
+                                        handleSendMessage();
                                     }
                                 }}
                                 disabled={!isConnected}
                                 rows={1}
                             />
-                            {/** allow the user to select the fileId from myFilesFromHelper*/}
-                            <select onChange={(e) => setFile(e.target.value)}>
-                                <option value="">Select a fileId to share</option>
-                                {myFilesFromHelper.map((fileId, index) => (
-                                    <option key={index} value={fileId.id}>
-                                        {fileId.filename}
+                            
+                            {/* File selection dropdown */}
+                            <select 
+                                value={selectedFileId} 
+                                onChange={(e) => setSelectedFileId(e.target.value)}
+                                className="file-selector"
+                            >
+                                <option value="">Select file to share</option>
+                                {myFilesFromHelper && myFilesFromHelper.map((file) => (
+                                    <option key={file.id} value={file.id}>
+                                        📎 {file.filename} ({file.contentType})
                                     </option>
                                 ))}
                             </select>
+
                             <button
                                 className="send-button"
-                                onClick={sendMessage}
-                                disabled={!isConnected || messageInput.trim() === ''}
+                                onClick={handleSendMessage}
+                                disabled={!isConnected || (messageInput.trim() === '' && !selectedFileId)}
+                                title={selectedFileId ? "Share selected file" : "Send message"}
                             >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                                </svg>
+                                {selectedFileId ? (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                                    </svg>
+                                ) : (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                    </svg>
+                                )}
                             </button>
+                        </div>
+                        
+                        {/* Debug info */}
+                        <div className="debug-info">
+                            <small>
+                                {selectedFileId ? `Selected file: ${selectedFileId}` : 'Type a message or select a file'}
+                            </small>
                         </div>
                     </div>
                 )}
