@@ -7,6 +7,7 @@ import './App.css';
 import Myfiles from './components/Myfiles';
 import Myfriends from './components/Myfriends';
 import ChatUi from './components/ChatUi';
+import { MyfilesHelperProvider } from './context/MyFilesHelper';
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -34,67 +35,71 @@ function App() {
     };
 
     return (
-        <Router>
-            <div className="App">
-                <Routes>
-                    <Route
-                        path="/login"
-                        element={
-                            isLoggedIn ?
-                                <Navigate to="/dashboard" replace /> :
-                                <Login onLogin={handleLogin} />
-                        }
-                    />
-                    <Route
-                        path="/register"
-                        element={
-                            isLoggedIn ?
-                                <Navigate to="/dashboard" replace /> :
-                                <Register />
-                        }
-                    />
-                    <Route
-                        path="/dashboard"
-                        element={
-                            isLoggedIn ?
-                                <Dashboard user={currentUser} onLogout={handleLogout} /> :
-                                <Navigate to="/login" replace />
-                        }
-                    />
-                    <Route
-                        path="/"
-                        element={
-                            <Navigate to={isLoggedIn ? "/dashboard" : "/login"} replace />
-                        }
-                    />
-                    <Route
-                        path="/Myfiles"
-                        element={
-                            isLoggedIn ?
-                                <Myfiles user={currentUser} onLogout={handleLogout} /> :
-                                <Navigate to="/login" replace />
-                        }
-                    />
-                    <Route
-                        path="/Myfriends"
-                        element={
-                            isLoggedIn ?
-                                <Myfriends user={currentUser} onLogout={handleLogout} /> :
-                                <Navigate to="/login" replace />
-                        }
-                    />
-                    {/** route to chat page */}
-                    <Route
-                        path="/ChatUi"
-                        element={
-                            isLoggedIn ?
-                                <ChatUi user={currentUser} onLogout={handleLogout} /> :
-                                <Navigate to="/login" replace />
-                        }
-                    />
 
-                </Routes>
-            </div>
+        <Router>
+            <MyfilesHelperProvider>
+                <div className="App">
+
+                    <Routes>
+                        <Route
+                            path="/login"
+                            element={
+                                isLoggedIn ?
+                                    <Navigate to="/dashboard" replace /> :
+                                    <Login onLogin={handleLogin} />
+                            }
+                        />
+                        <Route
+                            path="/register"
+                            element={
+                                isLoggedIn ?
+                                    <Navigate to="/dashboard" replace /> :
+                                    <Register />
+                            }
+                        />
+                        <Route
+                            path="/dashboard"
+                            element={
+                                isLoggedIn ?
+                                    <Dashboard user={currentUser} onLogout={handleLogout} /> :
+                                    <Navigate to="/login" replace />
+                            }
+                        />
+                        <Route
+                            path="/"
+                            element={
+                                <Navigate to={isLoggedIn ? "/dashboard" : "/login"} replace />
+                            }
+                        />
+                        <Route
+                            path="/Myfiles"
+                            element={
+                                isLoggedIn ?
+                                    <Myfiles user={currentUser} onLogout={handleLogout} /> :
+                                    <Navigate to="/login" replace />
+                            }
+                        />
+                        <Route
+                            path="/Myfriends"
+                            element={
+                                isLoggedIn ?
+                                    <Myfriends user={currentUser} onLogout={handleLogout} /> :
+                                    <Navigate to="/login" replace />
+                            }
+                        />
+                        {/** route to chat page */}
+                        <Route
+                            path="/ChatUi"
+                            element={
+                                isLoggedIn ?
+                                    <ChatUi user={currentUser} onLogout={handleLogout} /> :
+                                    <Navigate to="/login" replace />
+                            }
+                        />
+
+                    </Routes>
+                </div>
+            </MyfilesHelperProvider>
         </Router>
     );
 }

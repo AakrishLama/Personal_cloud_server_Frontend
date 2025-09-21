@@ -1,10 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext} from 'react';
 import { useLocation } from 'react-router-dom';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
 import "../ChatUi.css";
 
+// import myfileshelper context
+import useMyFilesHelper from '../context/MyFilesHelper';
+
 export default function ChatUi() {
+    //! myfiles from context to share .
+    const { myFilesFromHelper, loading, error, currentUserId } = useMyFilesHelper();
     const location = useLocation();
     const { friendUser } = location.state || {};
 
@@ -23,6 +28,9 @@ export default function ChatUi() {
     const stompClientRef = useRef(null);
 
     useEffect(()=>{
+        if(myFilesFromHelper){
+            console.log("myFilesFromhelper:", myFilesFromHelper);
+        }
         if(file){
             console.log("file selected:", file);
         }
